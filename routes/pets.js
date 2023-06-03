@@ -42,10 +42,8 @@ module.exports = (app) => {
     const pet = new Pet(req.body);
     pet.save(function (err) {
       if (req.file) {
-        // Upload the images
         client.upload(req.file.path, {}, function (err, versions, meta) {
           if (err) { return res.status(400).send({ err: err }) };
-          // Pop off the -square and -standard and just use the one URL to grab the image
           versions.forEach(function (image) {
             const urlArray = image.url.split('-');
             urlArray.pop();
@@ -108,5 +106,32 @@ module.exports = (app) => {
       { page: page }).then((results) => {
         res.render('pets-index', { pets: results.docs, pagesCount: results.pages, currentPage: page, term: req.query.term });
       });
+  });
+
+  // PURCHASE PET
+  app.post('/pets/:id/purchase', (req, res) => {
+    console.log(req.body);
+    const stripe = require("stripe")(process.env.PRIVATE_STRIPE_API_KEY);
+    const token = req.body.stripeToken;
+    let petId = req.body.petId || req.params.id;
+
+    Pet.findById(petId).exec((err, pet)=> {
+      if (err) {
+        console.log('Error: ' + err);
+        res.redirect(`/pets/${req.params.id}`);
+      }
+      const charge = stripe.charges.create({
+        amount: pet.price * 100,
+        currency: 'usd',
+        description: `Purchased ${pet.name}, ${pet.species}`,
+        source: token,
+      }).then((chg) => {
+        res.redirect(`/pets/${req.params.id}`);
+      })
+      .catch(err => {
+        console.log('Error:' + err);
+      });
+    })
+
   });
 }

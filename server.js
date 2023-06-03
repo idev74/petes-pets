@@ -21,6 +21,9 @@ mongoose.connect('mongodb://localhost/petes-pets', {
   useFindAndModify: false
 });
 
+// stripe setup
+app.locals.PUBLIC_STRIPE_API_KEY = process.env.PUBLIC_STRIPE_API_KEY
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -31,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(methodOverride('_method'))
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
