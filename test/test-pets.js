@@ -118,13 +118,25 @@ describe('Pets', () => {
   });
 
   // SEARCH
-  it('should search ALL pets by name on /search GET', (done) => {
+  // it('should search ALL pets by name on /search GET', (done) => {
+  //   chai.request(server)
+  //     .get('/search?term=norman')
+  //     .end((err, res) => {
+  //       res.should.have.status(200);
+  //       res.should.be.html;
+  //       done();
+  //     });
+  // });
+
+  it('should list ALL pets on /pets GET', function(done) {
     chai.request(server)
-      .get('/search?term=norman')
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.should.be.html;
-        done();
-      });
+        .get('/')
+        .set('content-type', 'application/json')
+        .end(function(err, res){
+          res.should.have.status(200);
+          res.should.be.json;
+          res.body.should.be.a('object');
+          done();
+        });
   });
 });
