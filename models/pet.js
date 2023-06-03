@@ -5,7 +5,7 @@ const mongoose = require('mongoose'),
 
 const mongoosePaginate = require('mongoose-paginate');
 mongoosePaginate.paginate.options = {
-  limit: 3 // how many records on each page
+  limit: 3
 };
 
 const PetSchema = new Schema({
@@ -24,5 +24,6 @@ const PetSchema = new Schema({
   });
 
   PetSchema.plugin(mongoosePaginate);
+  PetSchema.index({ name: 'text', species: 'text', favoriteFood: 'text', description: 'text' }, {name: 'My text index', weights: {name: 10, species: 4, favoriteFood: 2, description: 1}});
 
 module.exports = mongoose.model('Pet', PetSchema);
