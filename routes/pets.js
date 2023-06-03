@@ -3,6 +3,7 @@ const Pet = require('../models/pet');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const Upload = require('s3-uploader');
+const mailer = require('../utils/mailer');
 
 const client = new Upload(process.env.S3_BUCKET, {
   aws: {
@@ -115,9 +116,9 @@ module.exports = (app) => {
     const token = req.body.stripeToken;
     let petId = req.body.petId || req.params.id;
 
-    Pet.findById(petId).exec((err, pet)=> {
+    Pet.findById(petId).exec((err, pet) => {
       if (err) {
-        console.log('Error: ' + err);
+        console.log(`Error: ${err}`);
         res.redirect(`/pets/${req.params.id}`);
       }
       const charge = stripe.charges.create({
@@ -126,11 +127,18 @@ module.exports = (app) => {
         description: `Purchased ${pet.name}, ${pet.species}`,
         source: token,
       }).then((chg) => {
-        res.redirect(`/pets/${req.params.id}`);
+        const user = {
+          email: process.env.EMAIL,
+          name: 'Emily',
+          species: pet.species.toLowerCase(),
+          amount: chg.amount / 100,
+          petName: pet.name
+        };
+        mailer.sendMail(user, req, res);
       })
-      .catch(err => {
-        console.log('Error:' + err);
-      });
+        .catch(err => {
+          console.log(`Error: ${err}`);
+        });
     })
 
   });
